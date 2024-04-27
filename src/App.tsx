@@ -1,42 +1,70 @@
-// import { useState } from 'react'
-// import reactLogo from './assets/react.svg'
-// import viteLogo from '/vite.svg'
+import { useState } from 'react'
 import './App.css'
-
+//create a type for ButtonState
+type ButtonState = "DEFAULT" | "SELECTED" | "WRONG";
+//create a type for the Option in our options array
+type Option = {
+  value: string;
+  state: ButtonState;
+}
 function CountryCapitalGame({ data }: {data: Record<string, string>}) {
   const countries = Object.keys(data);
   const capitals = Object.values(data);
-  const options = [...countries, ...capitals]
+  const [options, setOptions] = useState<Option[]>(
+    [...countries, ...capitals]
+    .sort(()=> Math.random() - 0.5)
+    .map((value)=>({
+      value,
+      state: 'DEFAULT',
+    }))
+  );
   
-  return <>{options.map(option => <button>{option}</button>)}</>
+  const [selected, setSelected] = useState<Option>();
+
+  return (
+  <>
+  {options.map((option)=>(
+    <button
+    key = {option.value}
+    className={option.state === 'SELECTED' ? 'selected' : ''}
+    onClick={()=>{
+      if (!selected) {
+        setSelected(option);
+        setOptions(
+          options.map((opt)=>{
+            return opt === option ? 
+            {
+              ...opt,
+              state: 'SELECTED',
+            }
+            : opt;
+          })
+        );
+      } else {
+        if(selected.value === data[option.value] ||
+          data[selected.value] === option.value) {
+            setOptions(options.filter(opt=>{
+              return !(
+                opt.value === selected.value || opt.value === option.value
+                )
+            }))
+          }
+      }
+    }}
+    >
+      {option.value}
+    </button>
+  ))}
+</>
+  )
 }
 
 function App() {
-  // const [count, setCount] = useState(0)
+
 
   return (
     <>
     <CountryCapitalGame data={{ Germany: "Berlin", Azerbaijan: "Baku" }}/>
-      {/* <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div> */}
-      {/* <h1>Vite + React</h1> */}
-      {/* <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div> */}
-      {/* <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p> */}
     </>
   )
 }
